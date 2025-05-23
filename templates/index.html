@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Pemantauan Daya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --white-color: #fff;
+            --blue-color: #4070f4;
+            --grey-color: #707070;
+            --grey-color-light: #aaa;
+            --Hijau-Taro:#1aa263;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Poppins', sans-serif;
+          background-color: #f5f7fa;
+          color: #333;
+        }
+
+        .main-container {
+          max-width: 1000px;
+          margin: auto;
+          padding: 20px;
+        }
+
+        .text-center {
+          text-align: center;
+          color: #2c3e50;
+          margin-bottom: 20px;
+        }
+
+        .section-box {
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.07);
+          padding: 24px;
+          margin-bottom: 30px;
+        }
+        .charts-container {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          padding: 1rem;
+        }
+
+        .chart-box {
+          background-color: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          padding: 1.5rem;
+          transition: transform 0.2s ease;
+        }
+
+        .chart-box:hover {
+          transform: translateY(-5px);
+        }
+
+        .chart-box h3 {
+          text-align: center;
+          margin-bottom: 1rem;
+          font-size: 1.2rem;
+          color: #333;
+        }
+
+        .chart-box canvas {
+          width: 100% !important;
+          height: 400px !important;
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+          .chart-box canvas {
+            height: 300px !important;
+          }
+        }
+
+        .info-box {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          gap: 20px;
+          background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+          color: #0d47a1;
+        }
+
+        .info-item {
+          flex: 1 1 30%;
+          text-align: center;
+        }
+
+        .info-item h3 {
+          margin: 0;
+          font-weight: 600;
+        }
+
+        .info-item p {
+          font-size: 1.4em;
+          font-weight: bold;
+          margin-top: 8px;
+          background-color: wheat;
+        }
+
+        .category-tab {
+          display: none;
+        }
+
+        .category-tab.show {
+          display: block;
+        }
+
+        .tab {
+          padding: 10px 20px;
+          margin: 5px;
+          border: none;
+          background: #e3f2fd;
+          color: #0d47a1;
+          border-radius: 10px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: background 0.3s;
+        }
+
+        .tab.active {
+          background: #42a5f5;
+          color: white;
+        }
+
+        .tab:hover {
+          background: #64b5f6;
+        }
+
+        @media (max-width: 768px) {
+          .info-box {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .info-item {
+            flex: 1 1 100%;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header text-center">
+            <h2 class="text-center">Dashboard Pemantauan Energi</h2>
+          </div>
+        <!-- Tombol Tab -->
+            <div class="section-box text-center fade-in-scroll">
+              <button class="tab active" onclick="showCategory('dashboard', this)">Dashboard</button>
+              <button class="tab" onclick="showCategory('kwh', this)">Grafik Harian</button>
+            </div>
+        <!-- DASHBOARD REAL-TIME -->
+        <div id="dashboard" class="main-container category-tab show">
+
+          <div class="section-box info-box">
+            <div class="info-item">
+              <h3>Tanggal</h3>
+              <p><span id="tanggal-header">DD MM YYYY</span></p>
+            </div>
+            <div class="info-item">
+              <h3>Total Energi Hari Ini</h3>
+              <p><span id="kwhValue">0</span> kWh</p>
+            </div>
+            <div class="info-item">
+              <h3>Total Biaya Hari Ini</h3>
+              <p><span id="hargaValue">Rp 0,00</span></p>
+            </div>
+          </div>
+
+          <div class="section-box charts-box">
+            <div class="charts-container">
+              <div class="chart-box">
+                <h3>Grafik Arus (A)</h3>
+                <canvas id="arusChart"></canvas>
+              </div>
+
+              <div class="chart-box">
+                <h3>Grafik Tegangan (V)</h3>
+                <canvas id="teganganChart"></canvas>
+              </div>
+
+              <div class="chart-box">
+                <h3>Grafik Daya (W)</h3>
+                <canvas id="dayaChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHART KWH HARIAN -->
+        <div id="kwh" class="main-container category-tab">
+          <div class="section-box info-box">
+            <div class="info-item">
+              <h3>Tanggal</h3>
+              <p><span id="tanggal-header">DD MM YYYY</span></p>
+            </div>
+            <div class="info-item">
+              <h3>Total Energi Hari Ini</h3>
+              <p><span id="kwhValue">0</span> kWh</p>
+            </div>
+            <div class="info-item">
+              <h3>Total Biaya Hari Ini</h3>
+              <p><span id="hargaValue">Rp 0,00</span></p>
+            </div>
+          </div>
+          <div class="section-box charts-box">
+              <div class="charts-container">
+              <div class="chart-box">
+                <h3>Grafik  Total Kwh Perhari (kWh)</h3>
+                <canvas id="kwhChart"></canvas>
+              </div>
+
+              <div class="chart-box">
+                <h3>Grafik Total Harga Perhari (Rp)</h3>
+                <canvas id="hargaChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+      let kwhChart, hargaChart;
+
+      function showCategory(categoryId, button) {
+        document.querySelectorAll('.category-tab').forEach(tab => {
+          tab.classList.remove('show');
+        });
+        document.getElementById(categoryId).classList.add('show');
+
+        document.querySelectorAll('.tab').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        button.classList.add('active');
+      }
+
+      async function fetchKWHData() {
+        const response = await fetch('/data-kwh-harian'); // Endpoint Flask
+        const data = await response.json();
+
+        const tanggal = data.map(d => d.tanggal);
+        const totalKwh = data.map(d => d.total_kwh);
+        const totalHarga = data.map(d => d.total_harga);
+
+        // Update atau buat chart KWH
+        if (!kwhChart) {
+          kwhChart = new Chart(document.getElementById('kwhChart'), {
+            type: 'bar',
+            data: {
+              labels: tanggal,
+              datasets: [{
+                label: 'Total KWH',
+                data: totalKwh,
+                backgroundColor: '#42a5f5'
+              }]
+            },
+            options: { responsive: true }
+          });
+        } else {
+          kwhChart.data.labels = tanggal;
+          kwhChart.data.datasets[0].data = totalKwh;
+          kwhChart.update();
+        }
+
+        // Update atau buat chart Harga
+        if (!hargaChart) {
+          hargaChart = new Chart(document.getElementById('hargaChart'), {
+            type: 'bar',
+            data: {
+              labels: tanggal,
+              datasets: [{
+                label: 'Total Harga (Rp)',
+                data: totalHarga,
+                backgroundColor: '#ef5350'
+              }]
+            },
+            options: { responsive: true }
+          });
+        } else {
+          hargaChart.data.labels = tanggal;
+          hargaChart.data.datasets[0].data = totalHarga;
+          hargaChart.update();
+        }
+      }
+
+      fetchKWHData();
+      setInterval(fetchKWHData, 5000);
+    </script>
+
+    <script>
+    async function fetchKwh() {
+        const res = await fetch('/total-kwh');
+        const data = await res.json();
+
+        // Format ke "Rp xxx.xxx,00"
+        const formattedHarga = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 2
+        }).format(data.total_harga);
+
+        document.getElementById('kwhValue').textContent = data.total_kwh.toFixed(3);
+        document.getElementById('hargaValue').textContent = formattedHarga;
+    }
+
+    fetchKwh();
+    setInterval(fetchKwh, 5000); // Update tiap 10 detik
+</script>
+    <script>
+    let arusChart, teganganChart, dayaChart;
+
+    async function fetchData() {
+      const response = await fetch('/data');
+      const data = await response.json();
+
+      const reversedData = data.slice().reverse();
+        const waktu = reversedData.map(d => d.waktu);
+        const waktuJam = waktu.map(w => w.split(' ')[1]);
+        console.log(waktuJam);
+        const arus = reversedData.map(d => d.arus);
+        const tegangan = reversedData.map(d => d.tegangan);
+        const daya = reversedData.map(d => d.daya);
+
+
+      if (waktu.length > 0) {
+          const latestDateStr = waktu[0].split(' ')[0];
+          const tanggalObj = new Date(latestDateStr);
+
+          const hariNama = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+          const bulanNama = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                             "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+          const hari = hariNama[tanggalObj.getDay()];
+          const tanggal = tanggalObj.getDate();
+          const bulan = bulanNama[tanggalObj.getMonth()];
+          const tahun = tanggalObj.getFullYear();
+
+          document.getElementById("tanggal-header").textContent = `${hari}, ${tanggal} ${bulan} ${tahun}`;
+        }
+
+
+
+      if (!arusChart) {
+        // Buat chart pertama kali
+        arusChart = new Chart(document.getElementById('arusChart'), {
+          type: 'line',
+          data: {
+            labels: waktuJam,
+            datasets: [{
+              label: 'Arus (A)',
+              data: arus,
+              borderColor: 'blue',
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        teganganChart = new Chart(document.getElementById('teganganChart'), {
+          type: 'line',
+          data: {
+            labels: waktuJam,
+            datasets: [{
+              label: 'Tegangan (V)',
+              data: tegangan,
+              borderColor: 'green',
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        dayaChart = new Chart(document.getElementById('dayaChart'), {
+          type: 'line',
+          data: {
+            labels: waktuJam,
+            datasets: [{
+              label: 'Daya (W)',
+              data: daya,
+              borderColor: 'red',
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+      } else {
+        // Update chart jika sudah ada
+        arusChart.data.labels = waktuJam;
+        arusChart.data.datasets[0].data = arus;
+        arusChart.update();
+
+        teganganChart.data.labels = waktuJam;
+        teganganChart.data.datasets[0].data = tegangan;
+        teganganChart.update();
+
+        dayaChart.data.labels = waktuJam;
+        dayaChart.data.datasets[0].data = daya;
+        dayaChart.update();
+      }
+    }
+
+    fetchData(); // Load pertama
+    setInterval(fetchData, 5000); // Update setiap 10 detik
+  </script>
+</body>
+</html>
