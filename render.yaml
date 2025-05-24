@@ -1,0 +1,10 @@
+services:  
+  - type: web  
+    name: flask-iot-app  
+    env: python  
+    buildCommand: ""  
+    startCommand: python app.py  
+    envVars:  
+      - key: FLASK_ENV  
+        value: production  
+    plan: free 
