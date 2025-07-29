@@ -1,4 +1,4 @@
-#Energy-Planner
+#SmarTerminal:Energy-Planner
 This project is an independent project that aims to learn and apply the knowledge that I have learned in vocational schools and in college.
 This project uses tools, namely:
 1.ESP8266
